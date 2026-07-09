@@ -1,7 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, status, Response
 from pydantic import BaseModel
-from fastapi import HTTPException,status,Response
 from random import randrange
+from app.database import conn, cursor
+
 
 app = FastAPI()
 
@@ -30,14 +31,22 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.get("/posts")
-async def get_posts():
-    return {"data": my_posts}
+# @app.get("/posts")
+# async def get_posts():
+#     return {"data": my_posts}
 
 # @app.get("/posts/{id}")
 # async def get_post(id: int):
 #     print(id)
 #     return {"post_id": id}
+@app.get("/posts")
+async def get_posts():
+
+    cursor.execute("SELECT * FROM post")
+
+    posts = cursor.fetchall()
+
+    return {"data": posts}
 
 @app.get("/posts/latest")
 async def latest_post():
@@ -57,25 +66,25 @@ async def get_post(id: int):
         detail="Post was not found"
 )
 
-
-
-# @app.post("/createpost")
-# async def create_posts():
-#     return {
-#         "message":"Successfully Created Post"
-#     }
-
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
-async def create_posts(post: Post):
+async def create_post(post: Post):
 
-    post_dict = post.model_dump()
-    post_dict["id"] = randrange(0,100000)
+    cursor.execute(
+        """
+        INSERT INTO posts (title, content)
+        VALUES (%s, %s)
+        RETURNING *;
+        """,
+        (post.title, post.content)
+    )
 
-    my_posts.append(post_dict)
+    new_post = cursor.fetchone()
 
-    return post_dict
+    conn.commit()
 
-from fastapi import Response
+    return {
+        "data": new_post
+    }
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_post(id: int):
@@ -160,7 +169,3 @@ async def university():
 #         "name": "Jawad",
 #         "role": "AI Engineer"
 #     }
-
-@app.get("/posts")
-async def get_posts():
-    return {"data": "This is your posts"}
