@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, status, Response
+from fastapi import FastAPI, HTTPException, status, Response , APIRouter
 from pydantic import BaseModel
 from random import randrange
 from app.database import conn, cursor
@@ -13,10 +13,10 @@ from app.databaseORM import engine , get_db
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+router = APIRouter()
 
 
-@app.get("/")
+@router.get("/")
 async def root():
     return {"message": "Hello! This is me JB 😍😍"}
 
@@ -38,19 +38,19 @@ async def root():
 #             "data": posts}
 
 #Just random endpoints for testing purpose and understanding the endpoints in FastAPI
-@app.get("/about")
+@router.get("/about")
 async def about():
     return {"message": "I am learning FastAPI"}
 
 
-@app.get("/profile")
+@router.get("/profile")
 async def profile():
     return {
         "name": "Jawad",
         "role": "Frontend Developer"
     }
     
-@app.get("/skills")
+@router.get("/skills")
 async def skills():
     return {
         "React",
@@ -58,14 +58,14 @@ async def skills():
         'GitHub'
     }
 
-@app.get("/university")
+@router.get("/university")
 async def university():
     return {
         "name": "COMSATS",
         "Department": "Computer Engineering"
     }
 
-# @app.get("/about")
+# @router.get("/about")
 # async def about():
 #     return {
 #         "name": "Jawad",

@@ -6,22 +6,23 @@ from fastapi import FastAPI, HTTPException, status, Response , APIRouter
 # import time 
 from sqlalchemy.orm import Session 
 from fastapi import Depends
-from .. import models , schema , utils
+from .. import models , schema , utils , OAuth
 # import psycopg
 from app.databaseORM import engine , get_db 
+
 
 # --------------------------------------------------------------
 
 models.Base.metadata.create_all(bind=engine)
 
-router = APIRouter(tags=["Posts"] , prefix="/posts")
+router = APIRouter(tags=["Posts"])
 
 
 
 
 
 @router.get("/posts")
-async def get_posts(db: Session = Depends(get_db)):
+async def get_posts(db: Session = Depends(get_db), current_user: int = Depends(OAuth.get_current_user)):
 
     # cursor.execute("SELECT * FROM post")
 
@@ -63,7 +64,9 @@ async def get_post(id: int, db: Session = Depends(get_db)):
     }
 
 @router.post("/posts", status_code=status.HTTP_201_CREATED)
-async def create_post(post: schema.Post , db: Session = Depends(get_db)):
+async def create_post(post: schema.Post , db: Session = Depends(get_db), current_user: int = Depends(OAuth.get_current_user)):
+    
+
 
 #     cursor.execute(
 #     """
@@ -85,9 +88,7 @@ async def create_post(post: schema.Post , db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_post)
 
-    return {
-       new_post
-    }
+    return new_post
 
 @router.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_post(id: int, db: Session = Depends(get_db)):

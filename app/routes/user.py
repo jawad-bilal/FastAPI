@@ -13,7 +13,7 @@ from app.databaseORM import engine , get_db
 
 models.Base.metadata.create_all(bind=engine)
 
-router = APIRouter(tags=["Users"], prefix="/users")
+router = APIRouter(tags=["Users"])
 
 # ------------------------------------------------------------------------
 
