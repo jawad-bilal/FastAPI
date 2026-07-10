@@ -1,16 +1,15 @@
-from fastapi import FastAPI, HTTPException, status, Response
+from fastapi import FastAPI
+from app.routes import user , post , practice
+from .routes import auth
+from . import models
+from app.databaseORM import engine
 # from pydantic import BaseModel
 # from random import randrange
 # from app.database import conn, cursor
 # import time 
-from sqlalchemy.orm import Session 
+# from sqlalchemy.orm import Session 
 # from fastapi import Depends
-
-from app.routes import user , post , practice
-from .routes import auth
-from . import models
 # import psycopg
-from app.databaseORM import engine
 
 # --------------------------------------------------------------
 
