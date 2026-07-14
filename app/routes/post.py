@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from fastapi import Depends
 from .. import models , schema , OAuth
 from app.databaseORM import get_db 
+from  sqlalchemy  import func
 # import psycopg
 # from pydantic import BaseModel
 # from random import randrange
@@ -19,17 +20,40 @@ router = APIRouter(tags=["Posts"])
 
 
 
-@router.get("/posts", response_model=list[schema.PostOut])
-async def get_posts(db: Session = Depends(get_db), current_user: int = Depends(OAuth.get_current_user), limit : int = 10 , skip : int = 0 , search : str = ""):
+# @router.get("/posts", response_model=schema.PostVote)
+# async def get_posts(db: Session = Depends(get_db), limit : int = 10 , skip : int = 0 , search : str = ""):
 
-    # cursor.execute("SELECT * FROM post")
+#     # cursor.execute("SELECT * FROM post")
 
-    # posts = cursor.fetchall()
+#     # posts = cursor.fetchall()
     
-    posts = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
-    
+#     posts = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+#     result = db.query(models.Post, func.count(models.Vote.post_id).label("Vote_Count")).join(models.Vote, models.Post.id == models.Vote.post_id , isouter=True).group_by(models.Post.id).all()
+#     print(type(result))
+#     print(type(result[0]))
+#     print(result[0])
 
-    return  posts
+#     return  result
+
+@router.get("/posts", response_model=list[schema.PostVote])
+def get_posts(db: Session = Depends(get_db), current_user: int = Depends(OAuth.get_current_user)):
+
+    result = (
+        db.query(
+            models.Post,
+            func.count(models.Vote.post_id).label("votes")
+        )
+        .join(
+            models.Vote,
+            models.Post.id == models.Vote.post_id,
+            isouter=True
+        )
+        .group_by(models.Post.id)
+        .order_by(models.Post.created_at.asc())
+        .all()
+    )
+
+    return result
 
 @router.get("/posts/latest" , response_model=schema.PostOut)
 async def latest_post():
@@ -37,7 +61,7 @@ async def latest_post():
         "message": "This is the latest post"
     }
 
-@router.get("/posts/{id}")
+@router.get("/posts/{id}" , response_model=schema.PostVote)
 async def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends(OAuth.get_current_user)):
 
     # cursor.execute(
@@ -50,7 +74,20 @@ async def get_post(id: int, db: Session = Depends(get_db), current_user: int = D
 
     # post = cursor.fetchone()
     
-    post = db.query(models.Post).filter(models.Post.id == id).first()
+    # post = db.query(models.Post).filter(models.Post.id == id).first()
+    post = (
+        db.query(
+            models.Post,
+            func.count(models.Vote.post_id).label("votes")
+        )
+        .join(
+            models.Vote,
+            models.Post.id == models.Vote.post_id,
+            isouter=True
+        )
+        .group_by(models.Post.id)
+        .filter(models.Post.id == id).first()
+    )
     
 
     if post is None:
@@ -58,16 +95,14 @@ async def get_post(id: int, db: Session = Depends(get_db), current_user: int = D
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Post with id {id} was not found"
         )
-        
-    if post.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to perform requested action"
-        )
+    
+    # if post.Post.user_id != current_user.id:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_403_FORBIDDEN,
+    #         detail="Not authorized to perform requested action"
+    #     )
 
-    return {
-         post
-    }
+    return post
 
 @router.post("/posts", status_code=status.HTTP_201_CREATED , response_model=schema.PostOut)
 async def create_post(post: schema.Post , db: Session = Depends(get_db), current_user: int = Depends(OAuth.get_current_user)):

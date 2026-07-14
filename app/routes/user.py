@@ -50,3 +50,16 @@ async def get_user(id : int , db: Session = Depends(get_db)):
         )
 
     return user
+
+@router.get("/user", response_model=schema.UserOut)
+async def get_user(db: Session = Depends(get_db)):
+
+    user = db.query(models.User).all()
+
+    # if user is None:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_404_NOT_FOUND,
+    #         detail=f"User with id {id} was not found"
+    #     )
+
+    return user

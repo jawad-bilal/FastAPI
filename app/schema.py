@@ -31,6 +31,13 @@ class PostOut(BaseModel):
     owner: UserOut
     class Config:
         orm_mode = True
+
+class PostVote(BaseModel):
+    Post: PostOut
+    votes: int
+
+    class Config:
+        orm_mode = True
         
 class LoginUser(BaseModel):
     email: EmailStr
