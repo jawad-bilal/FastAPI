@@ -5,7 +5,8 @@ import os
 
 load_dotenv()
 
-engine = create_engine(os.getenv("SQLALCHEMY_DATABASE_URL"))
+DATABASE_URL = os.getenv("SQLALCHEMY_DATABASE_URL") or "sqlite:///./app.db"
+engine = create_engine(DATABASE_URL)
 
 sessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

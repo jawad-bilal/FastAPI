@@ -25,5 +25,6 @@ jobs:
       - name: Run tests
         env:
           PYTHONPATH: .
+          SQLALCHEMY_DATABASE_URL: sqlite:///./app.db
         run: |
           pytest tests/ -q
