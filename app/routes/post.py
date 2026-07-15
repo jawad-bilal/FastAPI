@@ -120,7 +120,8 @@ async def create_post(post: schema.Post , db: Session = Depends(get_db), current
 
 #     new_post = cursor.fetchone()
 
-    new_post = models.Post( user_id=current_user.id, **post.model_dump())
+    new_post = models.Post(user_id=current_user.id, **post.model_dump())
+    new_post.owner = current_user
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
