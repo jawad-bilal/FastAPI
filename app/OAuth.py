@@ -16,9 +16,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 load_dotenv()
 
-SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-ALGORITHM = os.getenv("TOKEN_ALGORITHM")
-JWT_TOKEN_EXPIRE_MINUTES = int(os.getenv("TOKEN_EXPIRE_MINUTES"))
+SECRET_KEY = os.getenv("JWT_SECRET_KEY") or "test-secret-key"
+ALGORITHM = os.getenv("TOKEN_ALGORITHM") or "HS256"
+JWT_TOKEN_EXPIRE_MINUTES = int(os.getenv("TOKEN_EXPIRE_MINUTES") or 30)
 
 # print(JWT_TOKEN_EXPIRE_MINUTES)
 
